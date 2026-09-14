@@ -21,3 +21,7 @@ class ErrorAnalyzer:
         total_counts = pd.Series(self.y_true).value_counts()
         error_rate = error_counts / total_counts
         return error_rate.sort_values(ascending=False)
+
+    def most_confused_with(self):
+        errors_df = self.misclassified()
+        return errors_df.groupby('true_label')['predicted_label'].agg(lambda x: x.value_counts().idxmax())
