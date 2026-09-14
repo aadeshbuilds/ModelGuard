@@ -35,3 +35,4 @@ class Evaluator:
 
     def per_class_report(self):
         return classification_report(self.y_true, self.y_pred, output_dict=True)
+
