@@ -245,7 +245,12 @@ with st.sidebar:
                 y_test = pd.read_csv(y_true_file).values.ravel()
                 y_pred = pd.read_csv(y_pred_file).values.ravel()
                 y_proba = pd.read_csv(y_proba_file).values
-                data_loaded = True
+
+                if not (len(y_test) == len(y_pred) == len(y_proba)):
+                    st.error(f"Row count mismatch — y_true: {len(y_test)}, y_pred: {len(y_pred)}, y_proba: {len(y_proba)}. All three files must have the same number of rows.")
+                    data_loaded = False
+                else:
+                    data_loaded = True
             else:
                 st.warning("Upload all three files to continue.")
                 data_loaded = False
