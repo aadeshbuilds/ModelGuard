@@ -4,7 +4,7 @@ import pandas as pd
 import sys
 import os
 import plotly.express as px
-
+import plotly.graph_objects as go
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.evaluator import Evaluator
@@ -12,6 +12,7 @@ from core.error_analysis import ErrorAnalyzer
 from core.confidence import ConfidenceAnalyzer
 from core.health_report import HealthReport
 from core.comparison import ModelComparator
+from core.calibration import Calibration
 
 st.set_page_config(page_title="ModelGuard", page_icon="🛡️", layout="wide")
 
@@ -268,7 +269,7 @@ if app_mode == "📊 Single Model Report":
         confidence_analyzer = ConfidenceAnalyzer(y_test, y_pred, y_proba)
         class_labels = [f"Class {c}" for c in np.unique(y_test)]
 
-        tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "🔲 Confusion Matrix", "🔍 Error Analysis", "⚠️ Confidence Analysis", "🏥 Health Report"])
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📊 Overview", "🔲 Confusion Matrix", "🔍 Error Analysis", "⚠️ Confidence Analysis", "🏥 Health Report", "📐 Calibration"])
 
         with tab1:
             st.subheader("Overall Metrics")
@@ -359,6 +360,32 @@ if app_mode == "📊 Single Model Report":
                     <div style="opacity: 0.85; font-size: 0.9rem; margin-top: 4px;">{check['Details']}</div>
                 </div>
                 """, unsafe_allow_html=True)
+
+        with tab6:
+            st.subheader("Calibration")
+            st.caption("Does the model's stated confidence match its real-world accuracy?")
+
+            calibration = Calibration(y_test, y_pred, y_proba)
+            cal_summary = calibration.calibration_summary()
+            brier = calibration.brier_score()
+
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                st.metric("Brier Score", f"{brier:.4f}", help="Lower is better. Caution: can look favorable for models that are simply more accurate, even if overconfident — always check the reliability diagram alongside this number.")
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(x=[0, 1], y=[0, 1], mode='lines', name='Perfect Calibration',
+                                      line=dict(dash='dash', color='gray')))
+            fig.add_trace(go.Scatter(
+                x=cal_summary['avg_confidence'], y=cal_summary['actual_accuracy'],
+                mode='lines+markers', name='This Model'
+            ))
+            fig.update_layout(
+                xaxis_title='Predicted Confidence',
+                yaxis_title='Actual Accuracy',
+                height=450
+            )
+            st.plotly_chart(fig, use_container_width=True)
     else:
         st.info("👈 Choose a data source in the sidebar to get started.")
 
