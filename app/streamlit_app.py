@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.evaluator import Evaluator
 from core.error_analysis import ErrorAnalyzer
 from core.confidence import ConfidenceAnalyzer
+from core.health_report import HealthReport
 
 st.set_page_config(page_title="ModelGuard", page_icon="🛡️", layout="wide")
 
@@ -235,8 +236,7 @@ if data_loaded:
     confidence_analyzer = ConfidenceAnalyzer(y_test, y_pred, y_proba)
     class_labels = [f"Class {c}" for c in np.unique(y_test)]
 
-    tab1, tab2, tab3, tab4 = st.tabs(["📊 Overview", "🔲 Confusion Matrix", "🔍 Error Analysis", "⚠️ Confidence Analysis"])
-
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["📊 Overview", "🔲 Confusion Matrix", "🔍 Error Analysis", "⚠️ Confidence Analysis", "🏥 Health Report"])
     # ---- TAB 1: OVERVIEW ----
     with tab1:
         st.subheader("Overall Metrics")
@@ -315,6 +315,35 @@ if data_loaded:
             use_container_width=True,
             hide_index=True
         )
+
+    # ---- TAB 5: HEALTH REPORT ----
+    with tab5:
+        st.subheader("Model Health Report")
+        st.caption("Automated pass/warning/fail checks with suggestions.")
+
+        health = HealthReport(y_test, y_pred, y_proba)
+        checks = health.generate()
+
+        status_styles = {
+            "✅ Pass": ("rgba(74, 222, 128, 0.08)", "#4ADE80"),
+            "⚠️ Warning": ("rgba(250, 204, 21, 0.08)", "#FACC15"),
+            "❌ Fail": ("rgba(248, 113, 113, 0.08)", "#F87171"),
+        }
+
+        for check in checks:
+            bg_color, border_color = status_styles[check["Status"]]
+            st.markdown(f"""
+            <div style="
+                background: {bg_color};
+                border-left: 4px solid {border_color};
+                border-radius: 8px;
+                padding: 14px 18px;
+                margin-bottom: 12px;
+            ">
+                <div style="font-weight: 700; font-size: 1rem;">{check['Status']} &nbsp; {check['Check']}</div>
+                <div style="opacity: 0.85; font-size: 0.9rem; margin-top: 4px;">{check['Details']}</div>
+            </div>
+            """, unsafe_allow_html=True)
 
 else:
     st.info("👈 Choose a data source in the sidebar to get started.")
