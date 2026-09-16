@@ -214,6 +214,11 @@ def load_predictions(prefix, default_model):
             y_true = pd.read_csv(yt).values.ravel()
             y_pred = pd.read_csv(yp).values.ravel()
             y_proba = pd.read_csv(ypa).values
+
+            if not (len(y_true) == len(y_pred) == len(y_proba)):
+                st.error(f"{prefix}: row count mismatch — y_true: {len(y_true)}, y_pred: {len(y_pred)}, y_proba: {len(y_proba)}. All three files must match.")
+                return None, None, None, None, False
+
             return y_true, y_pred, y_proba, "Uploaded Model", True
         return None, None, None, None, False
 
