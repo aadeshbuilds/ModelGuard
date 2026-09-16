@@ -22,8 +22,13 @@ class Calibration:
 
     def brier_score(self):
         y_true_arr = np.array(self.y_true)
-        classes = np.unique(y_true_arr)
-        y_true_onehot = np.zeros((len(y_true_arr), len(classes)))
+        n_classes = self.y_proba.shape[1]
+        classes = sorted(set(y_true_arr) | set(np.array(self.y_pred)))
+        if len(classes) < n_classes:
+            # y_proba has columns for classes never observed in this sample —
+            # fall back to a plain numeric class range so column order still lines up
+            classes = list(range(1, n_classes + 1)) if min(y_true_arr) >= 1 else list(range(n_classes))
+        y_true_onehot = np.zeros((len(y_true_arr), n_classes))
         for i, c in enumerate(classes):
             y_true_onehot[:, i] = (y_true_arr == c).astype(int)
         return np.mean(np.sum((self.y_proba - y_true_onehot) ** 2, axis=1))

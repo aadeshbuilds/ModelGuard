@@ -267,7 +267,7 @@ if app_mode == "📊 Single Model Report":
         evaluator = Evaluator(y_test, y_pred)
         error_analyzer = ErrorAnalyzer(y_test, y_pred)
         confidence_analyzer = ConfidenceAnalyzer(y_test, y_pred, y_proba)
-        class_labels = [f"Class {c}" for c in np.unique(y_test)]
+        class_labels = [f"Class {c}" for c in evaluator.labels]
 
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["📊 Overview", "🔲 Confusion Matrix", "🔍 Error Analysis", "⚠️ Confidence Analysis", "🏥 Health Report", "📐 Calibration"])
 

@@ -6,12 +6,13 @@ from sklearn.metrics import (
                         confusion_matrix,
                         classification_report
                         )
+import numpy as np
 
 class Evaluator:
     def __init__(self, y_true, y_pred):
         self.y_true = y_true
         self.y_pred = y_pred
-
+        self.labels = sorted(set(np.array(y_true)) | set(np.array(y_pred)))
     def accuracy(self):
         return accuracy_score(self.y_true, self.y_pred)
     
@@ -31,7 +32,7 @@ class Evaluator:
         return {'macro': macro, 'weighted': weighted}
     
     def confusion(self):
-        return confusion_matrix(self.y_true, self.y_pred)
+        return confusion_matrix(self.y_true, self.y_pred, labels=self.labels)
 
     def per_class_report(self):
         return classification_report(self.y_true, self.y_pred, output_dict=True)
