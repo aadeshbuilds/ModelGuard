@@ -25,5 +25,7 @@ class ConfidenceAnalyzer:
 
     def confidently_wrong_rate(self, threshold=0.9):
         n_wrong = (np.array(self.y_true) != np.array(self.y_pred)).sum()
+        if n_wrong == 0:
+            return 0.0
         n_confidently_wrong = self.confidently_wrong(threshold).shape[0]
         return n_confidently_wrong / n_wrong

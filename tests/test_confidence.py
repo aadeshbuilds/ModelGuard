@@ -41,3 +41,11 @@ def test_confidently_wrong_rate():
     analyzer = ConfidenceAnalyzer(y_true, y_pred, y_proba)
     rate = analyzer.confidently_wrong_rate(threshold=0.6)
     assert rate == 1.0
+
+def test_confidently_wrong_rate_perfect_model():
+    y_true = [1, 2]
+    y_pred = [1, 2]
+    y_proba = [[0.9, 0.1], [0.1, 0.9]]
+    analyzer = ConfidenceAnalyzer(y_true, y_pred, y_proba)
+    rate = analyzer.confidently_wrong_rate()
+    assert rate == 0.0
