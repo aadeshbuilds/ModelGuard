@@ -5,9 +5,11 @@ import sys
 import os
 import plotly.express as px
 import plotly.graph_objects as go
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from core.evaluator import Evaluator
+from core.drift_detection import DriftDetector
 from core.error_analysis import ErrorAnalyzer
 from core.confidence import ConfidenceAnalyzer
 from core.health_report import HealthReport
@@ -224,10 +226,11 @@ def load_predictions(prefix, default_model):
 
 
 # ---------------- SIDEBAR ----------------
+# ---------------- SIDEBAR ----------------
 with st.sidebar:
     st.markdown("### ⚙️ Configuration")
     st.divider()
-    app_mode = st.radio("Mode", ["📊 Single Model Report", "⚖️ Compare Two Models"], label_visibility="collapsed")
+    app_mode = st.radio("Mode", ["📊 Single Model Report", "⚖️ Compare Two Models", "📉 Drift Detection"], label_visibility="collapsed")
     st.divider()
 
     if app_mode == "📊 Single Model Report":
@@ -260,7 +263,7 @@ with st.sidebar:
                 st.warning("Upload all three files to continue.")
                 data_loaded = False
 
-    else:
+    elif app_mode == "⚖️ Compare Two Models":
         st.markdown("**Model A**")
         y_true_a, y_pred_a, y_proba_a, name_a, loaded_a = load_predictions("Model A", "Logistic Regression")
         st.divider()
@@ -268,9 +271,23 @@ with st.sidebar:
         y_true_b, y_pred_b, y_proba_b, name_b, loaded_b = load_predictions("Model B", "XGBoost")
         comparison_loaded = loaded_a and loaded_b
 
+    else:
+        st.markdown("**Reference Dataset**")
+        st.caption("The original/training data feature file (CSV, no target column needed).")
+        reference_file = st.file_uploader("reference.csv", type="csv", key="drift_ref")
+        st.markdown("**Current Dataset**")
+        st.caption("The new/recent data to check for drift.")
+        current_file = st.file_uploader("current.csv", type="csv", key="drift_cur")
+
+        if reference_file and current_file:
+            reference_data = pd.read_csv(reference_file)
+            current_data = pd.read_csv(current_file)
+            drift_loaded = True
+        else:
+            drift_loaded = False
+
     st.divider()
     st.caption("ModelGuard v1.0 · Classification reliability toolkit")
-
 # ---------------- SINGLE MODEL REPORT ----------------
 if app_mode == "📊 Single Model Report":
     if data_loaded:
@@ -400,7 +417,7 @@ if app_mode == "📊 Single Model Report":
         st.info("👈 Choose a data source in the sidebar to get started.")
 
 # ---------------- COMPARE TWO MODELS ----------------
-else:
+elif app_mode == "⚖️ Compare Two Models":
     if comparison_loaded:
         comparator = ModelComparator(y_true_a, y_pred_a, y_proba_a, y_pred_b, y_proba_b, name_a=name_a, name_b=name_b)
 
@@ -441,3 +458,28 @@ else:
                 """, unsafe_allow_html=True)
     else:
         st.info("👈 Set up both Model A and Model B in the sidebar to compare.")
+    # ---------------- DRIFT DETECTION ----------------
+else:
+    if drift_loaded:
+        detector = DriftDetector(reference_data, current_data)
+        results = detector.detect_drift()
+
+        n_drifted = results['drifted'].sum()
+        st.subheader("📉 Drift Detection Results")
+        st.caption(f"Comparing {len(reference_data)} reference rows against {len(current_data)} current rows across {len(results)} shared features.")
+
+        col1, col2 = st.columns(2)
+        col1.metric("Features Checked", len(results))
+        col2.metric("Features Drifted", int(n_drifted), delta=None,
+                    help="Features where the current data's distribution is statistically different from the reference data (p < 0.05, KS test).")
+
+        st.divider()
+        st.dataframe(
+            results.sort_values('p_value').style.format({'p_value': '{:.4f}'}).map(
+                lambda v: 'color: #F87171; font-weight: 600' if v is True else 'color: #4ADE80',
+                subset=['drifted']
+            ),
+            use_container_width=True, hide_index=True
+        )
+    else:
+        st.info("👈 Upload both a reference and current dataset in the sidebar to check for drift.")
