@@ -7,7 +7,7 @@ class ErrorAnalyzer:
         self.y_pred = y_pred
 
     def misclassified(self):
-        misclassified_indices = np.where(self.y_true != self.y_pred)[0]
+        misclassified_indices = np.where(np.array(self.y_true) != np.array(self.y_pred))[0]
         errors_df = pd.DataFrame({
             'index': misclassified_indices,
             'true_label': np.array(self.y_true)[misclassified_indices],
@@ -19,7 +19,7 @@ class ErrorAnalyzer:
         errors_df = self.misclassified()
         error_counts = errors_df['true_label'].value_counts()
         total_counts = pd.Series(self.y_true).value_counts()
-        error_rate = error_counts / total_counts
+        error_rate = (error_counts / total_counts).fillna(0)
         return error_rate.sort_values(ascending=False)
 
     def most_confused_with(self):
