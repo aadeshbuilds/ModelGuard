@@ -51,6 +51,9 @@ Every module works with either the built-in demo models or your own uploaded pre
 **Calibration** — the reliability diagram shows exactly where confidence diverges from reality
 ![Calibration](docs/screenshots/calibration.png)
 
+**Compare Two Models** — accuracy says XGBoost wins; the Health Report says otherwise
+![Compare Two Models](docs/screenshots/compare_models.png)
+
 ---
 
 ## 🧱 Tech Stack
