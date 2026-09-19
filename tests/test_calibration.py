@@ -27,3 +27,15 @@ def test_calibration_summary_runs_with_list_input():
     calibration = Calibration(y_true, y_pred, y_proba)
     summary = calibration.calibration_summary()
     assert len(summary) > 0
+
+def test_brier_score_raises_on_class_mismatch():
+    y_true = [1, 2, 3]
+    y_pred = [1, 2, 3]
+    y_proba = [[0.5, 0.5], [0.5, 0.5], [0.5, 0.5]]  # only 2 columns, but 3 classes present
+
+    calibration = Calibration(y_true, y_pred, y_proba)
+    try:
+        calibration.brier_score()
+        assert False, "Expected a ValueError but none was raised"
+    except ValueError:
+        pass

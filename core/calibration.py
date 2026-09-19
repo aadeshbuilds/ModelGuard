@@ -25,10 +25,18 @@ class Calibration:
         y_proba_arr = np.array(self.y_proba)
         n_classes = y_proba_arr.shape[1]
         classes = sorted(set(y_true_arr) | set(np.array(self.y_pred)))
+
+        if len(classes) > n_classes:
+            raise ValueError(
+                f"y_true/y_pred contain {len(classes)} distinct classes, "
+                f"but y_proba only has {n_classes} columns. "
+                f"Check that y_proba has one column per class."
+            )
         if len(classes) < n_classes:
             # y_proba has columns for classes never observed in this sample —
             # fall back to a plain numeric class range so column order still lines up
             classes = list(range(1, n_classes + 1)) if min(y_true_arr) >= 1 else list(range(n_classes))
+
         y_true_onehot = np.zeros((len(y_true_arr), n_classes))
         for i, c in enumerate(classes):
             y_true_onehot[:, i] = (y_true_arr == c).astype(int)

@@ -393,8 +393,12 @@ if app_mode == "📊 Single Model Report":
             st.caption("Does the model's stated confidence match its real-world accuracy?")
 
             calibration = Calibration(y_test, y_pred, y_proba)
-            cal_summary = calibration.calibration_summary()
-            brier = calibration.brier_score()
+            try:
+                cal_summary = calibration.calibration_summary()
+                brier = calibration.brier_score()
+            except ValueError as e:
+                st.error(f"Calibration error: {e}")
+                st.stop()
 
             col1, col2 = st.columns([1, 3])
             with col1:
