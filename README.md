@@ -42,7 +42,14 @@ Every module works with either the built-in demo models or your own uploaded pre
 
 ## 🖥️ Screenshots
 
-*(add screenshots here — Overview tab, Confusion Matrix, Health Report showing XGBoost's fail, Reliability Diagram, Compare Two Models view)*
+**Overview** — accuracy alone hides the real story
+![Overview](docs/screenshots/overview.png)
+
+**Health Report** — XGBoost passes accuracy and recall, fails on trustworthiness
+![Health Report](docs/screenshots/health_report.png)
+
+**Calibration** — the reliability diagram shows exactly where confidence diverges from reality
+![Calibration](docs/screenshots/calibration.png)
 
 ---
 
@@ -54,7 +61,7 @@ Python · Pandas · NumPy · scikit-learn · XGBoost · SciPy · Plotly · Strea
 
 ## 🚀 Try it live
 
-**[Live demo →](#)** *(add your deployed URL here)*
+**[Live demo →](https://modelguard.streamlit.app)**
 
 ---
 
